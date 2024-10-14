@@ -8,7 +8,6 @@
       <SignUpSuccessTemplate
         v-if="store.isSuccessPage && store.isOtpVerified"
       />
-
       <LogInPasswordTemplate
         v-if="
           !store.isOTPage &&
