@@ -1,0 +1,52 @@
+name: E2E Visual Regression Test
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  e2e_visual_regression:
+    name: e2e_visual_regression
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install pnpm
+        run: |
+          npm install -g pnpm
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "pnpm"
+
+      - name: Install Dependencies
+        run: pnpm install
+
+      - name: Build Application
+        run: pnpm build
+
+      - name: Start Application
+        run: pnpm start &
+        env:
+          PORT: 3000
+
+      - name: Wait for Application to Start
+        run: |
+          while ! nc -z localhost 3000; do   
+            sleep 1
+          done
+      - name: Run Chromatic for Storybook Visual Regression
+        working-directory: ./
+        run: pnpx chromatic --project-token=chpt_1327768e4f91bb1
+          
+      - name: Run Cypress E2E with Chromatic Visual Regression
+        working-directory: ./
+        run: |
+          ELECTRON_EXTRA_LAUNCH_ARGS=--remote-debugging-port=9222 npx cypress run
+          npx chromatic --cypress --project-token=chpt_f85f9bf55116f53
